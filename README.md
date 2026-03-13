@@ -45,11 +45,11 @@ DIWA models social dynamics as interactions between three layers.
 2. Networks – relationships that transmit influence
 3. Fields – regional cultural environments
 
-                                    |  FIELD LAYER  (regional cultural influence)
-                     +--------------+--------------+
-NETWORK PROPAGATION  +                             +    CLUSTER FORMATION (group emergence)
-     (social ties)   +--------------+--------------+
-                                    |  AGENTS  (vector cultural states)
+|                                     |  FIELD LAYER  (regional cultural influence)
+|                      +--------------+--------------+
+| NETWORK PROPAGATION  +                             +  CLUSTER FORMATION (group emergence)
+|     (social ties)    +--------------+--------------+
+|                                     |  AGENTS  (vector cultural states)
                                  
 Each simulation step updates the system through:
 
