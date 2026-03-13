@@ -16,7 +16,7 @@ This applies to the **DIWA Engine Core**, including:
 * runtime update loops
 * engine-specific tooling and internal APIs
 
-#### Rights reserved
+#### All rights reserved
 
 Without prior written permission, no person or entity may:
 
