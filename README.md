@@ -49,7 +49,6 @@ DIWA models social dynamics as interactions between three layers.
                   FIELD LAYER
             (regional cultural influence)
                        |
-                       |
         +--------------+--------------+
         |                             |
   NETWORK PROPAGATION           CLUSTER FORMATION
