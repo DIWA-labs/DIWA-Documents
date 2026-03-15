@@ -3,7 +3,7 @@
 DIWA is a simulation framework for modeling cultural alignment,
 social influence networks, and emergent clustering across interacting populations.
 
-The system represents individuals, communities, and regions as vectors within a
+The system represents individuals, communities, and regions within a
 shared cultural state space. Through network propagation, environmental field
 dynamics, and cluster formation, the model produces emergent social structures
 such as factions, ideological blocs, and cultural regions.
