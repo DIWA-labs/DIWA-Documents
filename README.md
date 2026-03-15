@@ -18,9 +18,6 @@ CORE CONCEPTS
 
 DIWA models social dynamics using several interacting mechanisms.
 
-Vector Alignment
-    Cultural states are represented as normalized vectors.
-
 Network Propagation
     Social ties transmit influence between actors.
 
@@ -41,16 +38,6 @@ SYSTEM OVERVIEW
 
 DIWA models social dynamics as interactions between three layers.
 
-1. Agents – individuals or institutions represented as vectors
-2. Networks – relationships that transmit influence
-3. Fields – regional cultural environments
-
-|                                     |  FIELD LAYER  (regional cultural influence)
-|                      +--------------+--------------+
-| NETWORK PROPAGATION  +                             +  CLUSTER FORMATION (group emergence)
-|     (social ties)    +--------------+--------------+
-|                                     |  AGENTS  (vector cultural states)
-                                 
 Each simulation step updates the system through:
 
 1. network influence propagation
