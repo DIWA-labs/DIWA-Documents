@@ -7,7 +7,6 @@ All rights reserved.
 
 This applies to the **DIWA Engine Core**, including:
 
-* vector math and state representations
 * network propagation systems
 * field dynamics
 * clustering systems
