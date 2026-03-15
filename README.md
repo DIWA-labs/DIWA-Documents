@@ -1,6 +1,6 @@
 # DIWA
 
-DIWA is a vector-based simulation framework for modeling cultural alignment,
+DIWA is a simulation framework for modeling cultural alignment,
 social influence networks, and emergent clustering across interacting populations.
 
 The system represents individuals, communities, and regions as vectors within a
