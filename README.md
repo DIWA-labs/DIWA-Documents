@@ -1,42 +1,44 @@
 # DIWA
 
-DIWA is a simulation framework for modeling cultural alignment,
-social influence networks, and emergent clustering across interacting populations.
+DIWA is a simulation framework for exploring how cultures, communities, and social networks evolve through interaction, influence, and collective adaptation.
 
-The system represents individuals, communities, and regions within a
-shared cultural state space. Through network propagation, environmental field
-dynamics, and cluster formation, the model produces emergent social structures
-such as factions, ideological blocs, and cultural regions.
+The system models individuals, communities, and regions within a shared cultural state space. Through network propagation, environmental field dynamics, cluster formation, memory, and resistance mechanisms, DIWA produces emergent social structures such as factions, ideological blocs, cultural regions, and institutional patterns.
 
-DIWA was designed as a lightweight engine capable of powering research
-simulations, narrative worlds, and emergent societal systems.
+DIWA was designed as a lightweight engine capable of powering research simulations, educational models, narrative worlds, strategy games, and emergent societal systems.
 
+---
 
-----------------------------------------------------------------
-CORE CONCEPTS
-----------------------------------------------------------------
+## CORE CONCEPTS
 
 DIWA models social dynamics using several interacting mechanisms.
 
 Network Propagation
-    Social ties transmit influence between actors.
+
+```
+Social ties transmit influence between actors.
+```
 
 Environmental Fields
-    Regions exert cultural pull on local populations.
+
+```
+Regions exert cultural pull on local populations.
+```
 
 Cluster Formation
-    Similar actors form emergent ideological groups.
+
+```
+Similar actors form emergent ideological groups.
+```
 
 Memory and Resistance
-    Historical state and institutional inertia stabilize
-    cultural dynamics.
 
+```
+Historical state and institutional inertia stabilize cultural dynamics.
+```
 
-----------------------------------------------------------------
-SYSTEM OVERVIEW
-----------------------------------------------------------------
+---
 
-DIWA models social dynamics as interactions between three layers.
+## SYSTEM OVERVIEW
 
 Each simulation step updates the system through:
 
@@ -45,78 +47,82 @@ Each simulation step updates the system through:
 3. cluster formation and reinforcement
 4. memory and resistance stabilization
 
+These mechanisms interact to produce large-scale emergent patterns from local interactions.
 
-----------------------------------------------------------------
-RESEARCH MOTIVATION
-----------------------------------------------------------------
+---
 
-DIWA draws inspiration from several fields including:
+## RESEARCH MOTIVATION
 
-- sociology
-- complex systems
-- cultural diffusion models
-- agent-based simulation
-- network science
+DIWA draws inspiration from several fields, including:
 
-The goal is to provide a general-purpose framework for exploring
-emergent social dynamics.
+* sociology
+* complex systems
+* cultural diffusion models
+* agent-based simulation
+* network science
 
+The goal is to provide a general-purpose framework for exploring emergent social dynamics.
 
-----------------------------------------------------------------
-LICENSING
-----------------------------------------------------------------
+---
 
-DIWA uses a two-tier licensing structure separating the protected
-engine implementation from public documentation and application
-layer projects.
+## POTENTIAL APPLICATIONS
 
-See the /licenses directory for detailed licensing terms.
+Potential applications include:
 
+* cultural diffusion and social influence research
+* agent-based simulation and scenario modeling
+* educational demonstrations of complex systems
+* emergent narrative and world-building systems
+* faction and reputation systems in games
+* institutional and organizational modeling
+* experimental societal simulations
+* political and cultural landscape modeling
 
-----------------------------------------------------------------
-REPOSITORY STRUCTURE
-----------------------------------------------------------------
+DIWA does not attempt to predict real-world outcomes. Instead, it provides a framework for exploring how local interactions can produce large-scale social patterns.
 
-The DIWA project is organized into separate repositories to maintain
-a clear separation between the simulation engine and public research
-documentation.
+---
 
-diwa-engine-core   (private)
-    Implementation of the DIWA simulation engine.
+## LICENSING
 
-    Contains:
-        engine_core/
-        runtime/
-        network propagation
-        clustering systems
-        internal research tools
+DIWA uses a multi-tier licensing framework designed to encourage research, experimentation, and application development while protecting the long-term integrity of the project.
 
-diwa-docs          (public)
-    Documentation and conceptual framework for the DIWA system.
+See the `/licenses` directory for detailed licensing information.
 
-    Contains:
-        architecture descriptions
-        model explanations
-        diagrams and examples
-        licensing information
+---
 
+## REPOSITORY STRUCTURE
 
-----------------------------------------------------------------
-ACCESS MODEL
-----------------------------------------------------------------
+This repository contains:
 
-Public repositories provide the conceptual architecture and research
-documentation for the DIWA system.
+```
+engine_core/
+    Core simulation systems
 
-The engine implementation is maintained in a separate repository to
-allow controlled development and release of the simulation core.
+runtime/
+    Simulation runtime and execution systems
 
+docs/
+    Documentation and architecture descriptions
 
-----------------------------------------------------------------
-PROJECT STATUS
-----------------------------------------------------------------
+examples/
+    Example simulations and reference projects
+
+licenses/
+    Licensing and contributor agreements
+```
+
+---
+
+## ACCESS MODEL
+
+The DIWA Engine source code is publicly available.
+
+Use, modification, distribution, research, and commercial activities are governed by the applicable DIWA licenses contained within the `/licenses` directory.
+
+---
+
+## PROJECT STATUS
 
 DIWA is currently under active development.
 
-Documentation and architectural descriptions are publicly visible,
-while the engine implementation remains under controlled release.
+The project welcomes discussion, experimentation, research, and contributions consistent with the applicable DIWA licenses and contributor agreements.
