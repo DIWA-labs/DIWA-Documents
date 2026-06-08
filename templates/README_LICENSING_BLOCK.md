@@ -1,7 +1,36 @@
-#### Licensing Structure
+## LICENSING STRUCTURE
 
-This repository follows the DIWA two-tier model.
+DIWA follows a multi-tier licensing framework.
 
-Engine Core — protected  
-Applications / Games / Research Builds — separate terms
+DIWA Engine Core
 
+```
+The engine source code is publicly available.
+
+Use, modification, distribution, and commercial activities
+involving the Engine Core are governed by the
+DIWA Engine Core License.
+```
+
+Applications, Games, and Research Builds
+
+```
+Applications, games, simulations, and research projects
+built using DIWA are governed by separate licensing terms.
+```
+
+Commercial Licensing
+
+```
+Certain organizations and use cases may require a
+Commercial License.
+```
+
+Contributions
+
+```
+Community contributions are governed by the
+DIWA Contributor Agreement.
+```
+
+See the /licenses directory for complete licensing information.
