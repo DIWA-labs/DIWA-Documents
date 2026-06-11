@@ -199,8 +199,6 @@
   .node-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
   .node-table tr:last-child td { border-bottom: none; }
   .tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; display: inline-block; }
-  .tag-a { background: rgba(91,124,246,0.15); color: var(--accent); }
-  .tag-b { background: rgba(45,212,160,0.15); color: var(--accent2); }
 
   /* log */
   .log {
@@ -241,7 +239,7 @@
 
 <header>
   <div class="logo">DIWA<span>/</span>engine-core</div>
-  <a class="gh-link" href="https://github.com/DIWA-labs/DIWA-engine-core" target="_blank">
+  <a class="gh-link" href="https://github.com/DIWA-labs/DIWA-public" target="_blank">
     ↗ GitHub
   </a>
 </header>
@@ -252,7 +250,7 @@
   <div>
     <div class="section-label">backend</div>
     <div class="api-row">
-      <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://your-server:8000">
+      <input type="text" id="api-url" value="" placeholder="http://your-server:8000">
       <button onclick="checkHealth()">ping</button>
     </div>
     <div style="font-size:11px;color:var(--muted);display:flex;align-items:center">
@@ -382,6 +380,12 @@
 let sessionId = null;
 let history = [];
 const COLORS = ['#5b7cf6','#2dd4a0','#f06060','#f0a050','#a78bfa','#34d399','#fb7185','#60a5fa'];
+
+// dynamic region color — consistent per region name, works for any name
+function regionColor(r) {
+  const hash = r.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return COLORS[hash % COLORS.length];
+}
 
 function apiBase(){ return document.getElementById('api-url').value.replace(/\/$/,''); }
 function sync(el, outId){ document.getElementById(outId).textContent = parseFloat(el.value).toFixed(2); }
@@ -569,9 +573,10 @@ function drawNodeTable(state){
   tbody.innerHTML = '';
   Object.entries(state.nodes).forEach(([id, n]) => {
     const tr = document.createElement('tr');
+    const rc = regionColor(n.region);
     tr.innerHTML = `
       <td>${id}</td>
-      <td><span class="tag tag-${n.region.toLowerCase()}">${n.region}</span></td>
+      <td><span class="tag" style="background:${rc}22;color:${rc}">${n.region}</span></td>
       <td>[${n.vector.map(x=>x.toFixed(3)).join(', ')}]</td>
       <td>${n.memory.toFixed(2)}</td>
       <td>${n.resistance.toFixed(2)}</td>
