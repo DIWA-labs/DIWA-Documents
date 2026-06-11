@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIWA Engine — Simulator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2126;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8eaed;
+    --muted: #7a7f8a;
+    --accent: #5b7cf6;
+    --accent2: #2dd4a0;
+    --danger: #f06060;
+    --font-mono: "JetBrains Mono", "Fira Mono", monospace;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --radius: 8px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--muted); }
+
+  .gh-link {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    transition: border-color .2s, color .2s;
+  }
+  .gh-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  main {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 57px);
+  }
+
+  aside {
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .6rem;
+  }
+
+  .param-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .param-row label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 90px;
+  }
+  .param-row input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 3px;
+  }
+  .param-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  select, input[type=text] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  button {
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+    margin-bottom: 6px;
+  }
+  button:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+  button.primary:hover { background: #4a6be0; border-color: #4a6be0; color: #fff; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .api-row {
+    display: flex;
+    gap: 6px;
+  }
+  .api-row input { margin-bottom: 0; flex: 1; font-family: var(--font-mono); font-size: 11px; }
+  .api-row button { width: auto; padding: 6px 12px; margin-bottom: 0; }
+
+  /* main content */
+  .content {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .metric-value { font-family: var(--font-mono); font-size: 22px; color: var(--text); }
+  .metric-value.good { color: var(--accent2); }
+  .metric-value.warn { color: #f0a050; }
+
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+  .panel-title {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .75rem;
+  }
+
+  canvas { width: 100%; display: block; }
+
+  /* node table */
+  .node-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .node-table th { text-align: left; color: var(--muted); font-weight: 400; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  .node-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
+  .node-table tr:last-child td { border-bottom: none; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; display: inline-block; }
+  .tag-a { background: rgba(91,124,246,0.15); color: var(--accent); }
+  .tag-b { background: rgba(45,212,160,0.15); color: var(--accent2); }
+
+  /* log */
+  .log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    height: 100px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .log-line { margin-bottom: 2px; }
+  .log-line .ts { color: var(--accent); margin-right: 8px; }
+  .log-line .ok { color: var(--accent2); }
+  .log-line .err { color: var(--danger); }
+
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block; margin-right: 6px;
+    background: var(--muted);
+  }
+  .status-dot.connected { background: var(--accent2); }
+  .status-dot.error { background: var(--danger); }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: none; border-bottom: 1px solid var(--border); }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .panels { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DIWA<span>/</span>engine-core</div>
+  <a class="gh-link" href="https://github.com/DIWA-labs/DIWA-engine-core" target="_blank">
+    ↗ GitHub
+  </a>
+</header>
+
+<main>
+<aside>
+
+  <div>
+    <div class="section-label">backend</div>
+    <div class="api-row">
+      <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://your-server:8000">
+      <button onclick="checkHealth()">ping</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);display:flex;align-items:center">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">not connected</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">scenario</div>
+    <select id="scenario">
+      <option value="diverse">diverse population</option>
+      <option value="polarized">two factions</option>
+      <option value="consensus">near consensus</option>
+      <option value="institution">strong institution</option>
+    </select>
+    <div class="param-row">
+      <label>nodes</label>
+      <input type="range" min="4" max="20" step="1" value="8" id="n-nodes" oninput="sync(this,'n-nodes-v')">
+      <span class="param-val" id="n-nodes-v">8</span>
+    </div>
+    <div class="param-row">
+      <label>dims</label>
+      <input type="range" min="2" max="8" step="1" value="4" id="n-dims" oninput="sync(this,'n-dims-v')">
+      <span class="param-val" id="n-dims-v">4</span>
+    </div>
+    <button class="primary" onclick="newSession()">new session</button>
+  </div>
+
+  <div>
+    <div class="section-label">parameters</div>
+    <div class="param-row">
+      <label>α peer</label>
+      <input type="range" min="0.01" max="0.40" step="0.01" value="0.15" id="alpha" oninput="sync(this,'alpha-v')">
+      <span class="param-val" id="alpha-v">0.15</span>
+    </div>
+    <div class="param-row">
+      <label>β field pull</label>
+      <input type="range" min="0.01" max="0.30" step="0.01" value="0.08" id="beta" oninput="sync(this,'beta-v')">
+      <span class="param-val" id="beta-v">0.08</span>
+    </div>
+    <div class="param-row">
+      <label>γ field update</label>
+      <input type="range" min="0.01" max="0.20" step="0.01" value="0.04" id="gamma" oninput="sync(this,'gamma-v')">
+      <span class="param-val" id="gamma-v">0.04</span>
+    </div>
+    <div class="param-row">
+      <label>lag</label>
+      <input type="range" min="0.00" max="0.80" step="0.01" value="0.35" id="lag" oninput="sync(this,'lag-v')">
+      <span class="param-val" id="lag-v">0.35</span>
+    </div>
+    <div class="param-row">
+      <label>resistance</label>
+      <input type="range" min="0.00" max="0.80" step="0.01" value="0.15" id="resist" oninput="sync(this,'resist-v')">
+      <span class="param-val" id="resist-v">0.15</span>
+    </div>
+    <div class="param-row">
+      <label>cluster θ</label>
+      <input type="range" min="0.05" max="0.50" step="0.01" value="0.18" id="thresh" oninput="sync(this,'thresh-v')">
+      <span class="param-val" id="thresh-v">0.18</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">run</div>
+    <button onclick="runTicks(1)" id="btn-1" disabled>tick × 1</button>
+    <button onclick="runTicks(10)" id="btn-10" disabled>tick × 10</button>
+    <button onclick="runTicks(50)" id="btn-50" disabled>tick × 50</button>
+  </div>
+
+</aside>
+
+<div class="content">
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">tick</div>
+      <div class="metric-value" id="m-tick">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">consensus</div>
+      <div class="metric-value" id="m-consensus">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">clusters</div>
+      <div class="metric-value" id="m-clusters">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">field distance</div>
+      <div class="metric-value" id="m-fdist">—</div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-title">node scatter — dim 0 × dim 1</div>
+      <canvas id="scatter" height="220"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">consensus over time</div>
+      <canvas id="history" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">node state</div>
+    <table class="node-table">
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>region</th>
+          <th>vector</th>
+          <th>memory</th>
+          <th>resistance</th>
+        </tr>
+      </thead>
+      <tbody id="node-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="log" id="log"></div>
+
+</div>
+</main>
+
+<script>
+let sessionId = null;
+let history = [];
+const COLORS = ['#5b7cf6','#2dd4a0','#f06060','#f0a050','#a78bfa','#34d399','#fb7185','#60a5fa'];
+
+function apiBase(){ return document.getElementById('api-url').value.replace(/\/$/,''); }
+function sync(el, outId){ document.getElementById(outId).textContent = parseFloat(el.value).toFixed(2); }
+
+function log(msg, type=''){
+  const d = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  const ts = new Date().toLocaleTimeString('en-GB',{hour12:false});
+  line.innerHTML = `<span class="ts">${ts}</span><span class="${type}">${msg}</span>`;
+  d.prepend(line);
+}
+
+function setStatus(ok, text){
+  const dot = document.getElementById('status-dot');
+  const label = document.getElementById('status-text');
+  dot.className = 'status-dot ' + (ok ? 'connected' : 'error');
+  label.textContent = text;
+}
+
+async function checkHealth(){
+  try {
+    const r = await fetch(apiBase()+'/health');
+    const d = await r.json();
+    setStatus(true, `connected — ${d.sessions_active} session(s) active`);
+    log('health ok', 'ok');
+  } catch(e) {
+    setStatus(false, 'unreachable');
+    log('health check failed: '+e.message, 'err');
+  }
+}
+
+async function newSession(){
+  const cfg = {
+    n_nodes: parseInt(document.getElementById('n-nodes').value),
+    n_dims: parseInt(document.getElementById('n-dims').value),
+    scenario: document.getElementById('scenario').value,
+    alpha: parseFloat(document.getElementById('alpha').value),
+    beta: parseFloat(document.getElementById('beta').value),
+    gamma: parseFloat(document.getElementById('gamma').value),
+    lag: parseFloat(document.getElementById('lag').value),
+    resistance: parseFloat(document.getElementById('resist').value),
+    cluster_threshold: parseFloat(document.getElementById('thresh').value),
+  };
+  try {
+    const r = await fetch(apiBase()+'/session/new', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
+    });
+    const d = await r.json();
+    sessionId = d.session_id;
+    history = [];
+    log(`session created: ${sessionId.slice(0,8)}…`, 'ok');
+    ['btn-1','btn-10','btn-50'].forEach(id=>document.getElementById(id).disabled=false);
+    renderState(d.state);
+  } catch(e) {
+    log('new session failed: '+e.message, 'err');
+  }
+}
+
+async function runTicks(n){
+  if(!sessionId){ log('no active session', 'err'); return; }
+  const req = {
+    session_id: sessionId,
+    n_ticks: n,
+    alpha: parseFloat(document.getElementById('alpha').value),
+    beta: parseFloat(document.getElementById('beta').value),
+    gamma: parseFloat(document.getElementById('gamma').value),
+    lag: parseFloat(document.getElementById('lag').value),
+    cluster_threshold: parseFloat(document.getElementById('thresh').value),
+  };
+  try {
+    const r = await fetch(apiBase()+'/session/tick', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(req)
+    });
+    const d = await r.json();
+    log(`tick ${d.state.tick} — consensus ${d.state.metrics.consensus}`, 'ok');
+    renderState(d.state);
+  } catch(e) {
+    log('tick failed: '+e.message, 'err');
+  }
+}
+
+function renderState(state){
+  const m = state.metrics;
+
+  document.getElementById('m-tick').textContent = state.tick;
+
+  const cv = document.getElementById('m-consensus');
+  cv.textContent = m.consensus.toFixed(3);
+  cv.className = 'metric-value ' + (m.consensus > 0.7 ? 'good' : m.consensus < 0.3 ? 'warn' : '');
+
+  document.getElementById('m-clusters').textContent =
+    m.n_clusters + (m.n_singletons ? ` (+${m.n_singletons})` : '');
+  document.getElementById('m-fdist').textContent = m.field_distance.toFixed(3);
+
+  history.push(m.consensus);
+  drawScatter(state);
+  drawHistory();
+  drawNodeTable(state);
+}
+
+function drawScatter(state){
+  const canvas = document.getElementById('scatter');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = 220 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = 220, pad = 28;
+
+  ctx.clearRect(0,0,W,H);
+
+  // axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,H-pad); ctx.lineTo(W-pad,H-pad); ctx.stroke();
+
+  const nodes = Object.entries(state.nodes);
+  const field = state.field;
+
+  // field centroids
+  Object.entries(field).forEach(([r, fv], i) => {
+    const x = pad + fv[0] * (W - 2*pad);
+    const y = H - pad - fv[1] * (H - 2*pad);
+    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2);
+    ctx.strokeStyle = i===0 ? '#5b7cf6' : '#2dd4a0';
+    ctx.lineWidth = 1.5; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = i===0 ? '#5b7cf6aa' : '#2dd4a0aa';
+    ctx.font = '11px monospace'; ctx.fillText('field '+r, x+16, y+4);
+  });
+
+  // nodes
+  nodes.forEach(([id, n], i) => {
+    const v = n.vector;
+    const x = pad + v[0] * (W - 2*pad);
+    const y = H - pad - v[1] * (H - 2*pad);
+    const col = COLORS[i % COLORS.length];
+    ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2);
+    ctx.fillStyle = col+'55'; ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = col; ctx.font = '11px monospace';
+    ctx.fillText(id, x+11, y+4);
+  });
+}
+
+function drawHistory(){
+  const canvas = document.getElementById('history');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = 220 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = 220, pad = 28;
+
+  ctx.clearRect(0,0,W,H);
+  if(history.length < 2) return;
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,H-pad); ctx.lineTo(W-pad,H-pad); ctx.stroke();
+
+  // y labels
+  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px monospace';
+  [0,0.25,0.5,0.75,1.0].forEach(v => {
+    const y = H - pad - v*(H-2*pad);
+    ctx.fillText(v.toFixed(2), 2, y+3);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke();
+  });
+
+  ctx.beginPath();
+  history.forEach((v, i) => {
+    const x = pad + (i/(Math.max(history.length-1,1)))*(W-2*pad);
+    const y = H - pad - v*(H-2*pad);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = '#5b7cf6'; ctx.lineWidth = 2; ctx.stroke();
+
+  // fill
+  ctx.lineTo(pad + (history.length-1)/(Math.max(history.length-1,1))*(W-2*pad), H-pad);
+  ctx.lineTo(pad, H-pad); ctx.closePath();
+  ctx.fillStyle = 'rgba(91,124,246,0.1)'; ctx.fill();
+}
+
+function drawNodeTable(state){
+  const tbody = document.getElementById('node-tbody');
+  tbody.innerHTML = '';
+  Object.entries(state.nodes).forEach(([id, n]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${id}</td>
+      <td><span class="tag tag-${n.region.toLowerCase()}">${n.region}</span></td>
+      <td>[${n.vector.map(x=>x.toFixed(3)).join(', ')}]</td>
+      <td>${n.memory.toFixed(2)}</td>
+      <td>${n.resistance.toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+checkHealth();
+</script>
+</body>
+</html>
