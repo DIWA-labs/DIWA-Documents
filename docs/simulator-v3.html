@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIWA Simulator — Emergent Towns &amp; Orbit</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #070b12; color: #e2e8f0; font-family: monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; outline: none; border: none; cursor: pointer; display: block; width: 100%; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 11px; border-radius: 50%; background: #6366f1; cursor: pointer; border: 2px solid #070b12; }
+input[type=range]::-moz-range-thumb { width: 11px; height: 11px; border-radius: 50%; background: #6366f1; cursor: pointer; border: 2px solid #070b12; }
+::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: #0a0e14; } ::-webkit-scrollbar-thumb { background: #1e293b; }
+#header { background: #0a0e14; border-bottom: 1px solid #1e293b; padding: 8px 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+#wavebar { background: #0a0e14; border-bottom: 1px solid #1e293b; padding: 7px 16px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+#main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+#left { width: 190px; background: #0a0e14; border-right: 1px solid #1e293b; padding: 14px; overflow-y: auto; flex-shrink: 0; }
+#center { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+#canvas-wrap { flex: 1; background: #070b12; display: flex; align-items: center; justify-content: center; position: relative; min-height: 0; }
+#net { display: block; cursor: crosshair; max-width: 100%; max-height: 100%; border: 1px solid #1e293b; }
+#hint { position: absolute; bottom: 8px; left: 12px; font-size: 8px; color: #334155; pointer-events: none; }
+#table-wrap { height: 150px; background: #0a0e14; border-top: 1px solid #1e293b; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 9px; }
+th { padding: 5px 9px; text-align: left; color: #475569; font-weight: 400; white-space: nowrap; position: sticky; top: 0; background: #0a0e14; border-bottom: 1px solid #1e293b; }
+td { padding: 4px 9px; border-bottom: 1px solid #0f172a; }
+tr { cursor: pointer; }
+tr:hover td { background: #1e293b22; }
+tr.sel td { background: #1e293b33; }
+#right { width: 214px; background: #0a0e14; border-left: 1px solid #1e293b; padding: 14px; overflow-y: auto; flex-shrink: 0; }
+.section-label { font-size: 9px; color: #475569; letter-spacing: 2px; display: block; margin-bottom: 10px; }
+.slider-wrap { margin-bottom: 12px; }
+.slider-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 10px; }
+.btn { width: 100%; padding: 6px 0; margin-bottom: 7px; background: #0a0e14; border: 1px solid #334155; color: #64748b; border-radius: 3px; cursor: pointer; font-family: monospace; font-size: 10px; letter-spacing: 1px; }
+.btn:hover { border-color: #475569; color: #94a3b8; }
+.btn.active { border-color: #6366f1; color: #6366f1; background: #6366f111; }
+.phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.phase-item { font-size: 8px; padding: 3px 4px; border-radius: 2px; border: 1px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.awsp-axis { display: flex; gap: 7px; margin-bottom: 9px; align-items: flex-start; }
+.axis-bar { width: 3px; height: 26px; border-radius: 2px; flex-shrink: 0; margin-top: 2px; }
+.stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 9px; }
+.bayan-bar { width: 100%; height: 5px; background: #1e293b; border-radius: 2px; margin-bottom: 10px; }
+.bayan-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.spawn-tag { padding: 5px 7px; background: #f59e0b11; border: 1px solid #f59e0b44; border-radius: 3px; font-size: 8px; color: #f59e0b; line-height: 1.6; }
+.empty-right { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <div style="font-size:13px;font-weight:700;letter-spacing:3px;color:#6366f1">DIWA-LABS</div>
+    <div style="font-size:9px;color:#475569;letter-spacing:2px">SOCIAL DYNAMICS ENGINE v0.3 — EMERGENCE + ORBIT</div>
+  </div>
+  <div style="flex:1"></div>
+  <div style="font-size:9px;color:#475569">YEAR</div>
+  <span id="h-year" class="pill" style="background:#6366f122;color:#6366f1">0</span>
+  <div style="font-size:9px;color:#475569">PHASE</div>
+  <span id="h-phase" class="pill" style="background:#22c55e22;color:#22c55e">Awakening</span>
+  <div style="font-size:9px;color:#475569">SETTLEMENTS</div>
+  <span id="h-settle" class="pill" style="background:#f59e0b22;color:#f59e0b">0</span>
+</div>
+
+<div id="wavebar">
+  <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+    <div style="font-size:8px;color:#6366f1;letter-spacing:1px">CAWSP 1200y</div>
+    <svg id="wave-svg" width="160" height="22" style="display:block"></svg>
+    <div style="font-size:8px;color:#f59e0b;letter-spacing:1px">LOCAL 100y</div>
+    <svg id="wave-local" width="160" height="22" style="display:block"></svg>
+  </div>
+  <div id="axis-bars" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"></div>
+  <div style="flex:1"></div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+    <span id="dom-label" style="font-size:9px;font-weight:700;color:#22c55e">DOM: ANIMA</span>
+    <span id="local-dom-label" style="font-size:8px;color:#f59e0b">LOCAL: -</span>
+  </div>
+</div>
+
+<div id="main">
+  <div id="left">
+    <span class="section-label">WORLD CONTROLS</span>
+    <div class="slider-wrap">
+      <div class="slider-row"><span style="color:#94a3b8">Nodes</span><span id="v-nodes" style="color:#6366f1;font-weight:700">8</span></div>
+      <input type="range" id="s-nodes" min="2" max="20" value="8">
+    </div>
+    <div class="slider-wrap">
+      <div class="slider-row"><span style="color:#94a3b8">Connect Dist</span><span id="v-dist" style="color:#6366f1;font-weight:700">260px</span></div>
+      <input type="range" id="s-dist" min="80" max="450" value="260">
+    </div>
+    <div class="slider-wrap">
+      <div class="slider-row"><span style="color:#94a3b8">Auto Speed</span><span id="v-speed" style="color:#6366f1;font-weight:700">12x</span></div>
+      <input type="range" id="s-speed" min="1" max="60" value="12">
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:9px;color:#94a3b8;margin-bottom:6px">YEAR STEP</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px" id="step-btns">
+        <button class="btn step-btn active" data-step="1" style="padding:5px 0;font-size:10px">1 yr</button>
+        <button class="btn step-btn" data-step="5" style="padding:5px 0;font-size:10px">5 yr</button>
+        <button class="btn step-btn" data-step="10" style="padding:5px 0;font-size:10px">10 yr</button>
+        <button class="btn step-btn" data-step="50" style="padding:5px 0;font-size:10px">50 yr</button>
+      </div>
+    </div>
+    <div style="height:1px;background:#1e293b;margin-bottom:10px"></div>
+    <div style="font-size:8px;color:#334155;margin-bottom:10px;line-height:1.6">
+      LOCAL 100y cycle<br>drives node AWSP drift.<br>CAWSP 1200y cycle<br>is the cosmic field.
+    </div>
+    <div style="height:1px;background:#1e293b;margin:8px 0 12px"></div>
+    <button class="btn active" id="btn-run">|| PAUSE</button>
+    <button class="btn" id="btn-reset">RESET WORLD</button>
+    <button class="btn" id="btn-rand">RANDOM ALL AWSP</button>
+    <button class="btn" id="btn-top">TOP-DOWN VIEW</button>
+    <button class="btn" id="btn-iso">ORBIT VIEW (45°)</button>
+    <div style="height:1px;background:#1e293b;margin:12px 0"></div>
+    <span class="section-label">EMERGENT SETTLEMENTS</span>
+    <div class="slider-wrap">
+      <div class="slider-row"><span style="color:#94a3b8">Spawn threshold</span><span id="v-spawn" style="color:#f59e0b">0.8</span></div>
+      <input type="range" id="s-spawn" min="0.2" max="5.0" step="0.1" value="0.8" aria-label="Cumulative trade flow required for founding">
+    </div>
+    <div style="font-size:8px;color:#64748b;line-height:1.6">Every 80 simulated years, an eligible high-traffic corridor can found a village. Villages grow into towns and cities as population rises.</div>
+    <div id="town-events" aria-live="polite" style="color:#f59e0b;font-size:9px;line-height:1.6;margin-top:6px">No new settlements yet</div>
+    <div style="height:1px;background:#1e293b;margin:12px 0"></div>
+    <span class="section-label">AWSP AXES</span>
+    <div class="awsp-axis"><div class="axis-bar" style="background:#22c55e"></div><div><div style="font-size:10px;color:#22c55e;font-weight:700">A - Anima</div><div style="font-size:8px;color:#475569">Spirit / Ecology</div></div></div>
+    <div class="awsp-axis"><div class="axis-bar" style="background:#3b82f6"></div><div><div style="font-size:10px;color:#3b82f6;font-weight:700">W - Will</div><div style="font-size:8px;color:#475569">Governance / Law</div></div></div>
+    <div class="awsp-axis"><div class="axis-bar" style="background:#f59e0b"></div><div><div style="font-size:10px;color:#f59e0b;font-weight:700">S - Secular</div><div style="font-size:8px;color:#475569">Trade / Craft</div></div></div>
+    <div class="awsp-axis"><div class="axis-bar" style="background:#ef4444"></div><div><div style="font-size:10px;color:#ef4444;font-weight:700">P - Power</div><div style="font-size:8px;color:#475569">Military / Force</div></div></div>
+    <div style="height:1px;background:#1e293b;margin:12px 0"></div>
+    <span class="section-label">PHASE CLOCK</span>
+    <div class="phase-grid" id="phase-grid"></div>
+  </div>
+
+  <div id="center">
+    <div id="canvas-wrap">
+      <canvas id="net" width="680" height="370"></canvas>
+      <div id="hint">CLICK=SELECT | DRAG=PAN | WHEEL=ZOOM | RIGHT-DRAG=ORBIT (AZIMUTH + TILT) | DBL-CLICK=RESET</div>
+      <div id="view-hud" style="position:absolute;top:10px;right:12px;font-size:9px;color:#475569;font-family:monospace;pointer-events:none">zoom 100%  orbit 0deg  tilt 0deg</div>
+    </div>
+    <div id="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Tier</th><th>Pop</th><th>Traffic</th><th style="color:#22c55e">A</th><th style="color:#3b82f6">W</th><th style="color:#f59e0b">S</th><th style="color:#ef4444">P</th><th>Bayan</th></tr></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="right">
+    <div id="right-empty" class="empty-right">
+      <div style="font-size:28px;opacity:0.1">+</div>
+      <div style="font-size:9px;color:#334155;text-align:center;line-height:1.9">CLICK A NODE<br>TO INSPECT<br>AND EDIT AWSP</div>
+    </div>
+    <div id="right-editor" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div id="node-color-dot" style="width:12px;height:12px;border-radius:2px"></div>
+        <div><div id="node-title" style="font-size:11px;font-weight:700"></div><div id="node-sub" style="font-size:9px;color:#475569"></div></div>
+      </div>
+      <span class="section-label">AWSP VECTOR</span>
+      <div id="awsp-sliders"></div>
+      <button class="btn" id="btn-rand-node" style="margin-top:4px;margin-bottom:16px">RANDOMIZE NODE</button>
+      <div style="height:1px;background:#1e293b;margin-bottom:14px"></div>
+      <span class="section-label">BAYAN ANALYSIS</span>
+      <div class="stat-row"><span style="color:#475569">CAWSP dist</span><span id="stat-dist" style="color:#94a3b8;font-weight:700"></span></div>
+      <div class="stat-row"><span style="color:#475569">Bayan benefit</span><span id="stat-bayan" style="color:#94a3b8;font-weight:700"></span></div>
+      <div class="stat-row"><span style="color:#475569">Traffic</span><span id="stat-traffic" style="color:#94a3b8;font-weight:700"></span></div>
+      <div class="bayan-bar"><div class="bayan-fill" id="bayan-fill"></div></div>
+      <div id="spawn-tag" class="spawn-tag" style="display:none">HIGH TRAFFIC - settlement spawn eligible</div>
+      <div style="height:1px;background:#1e293b;margin:14px 0"></div>
+      <span class="section-label">AWSP RADAR</span>
+      <svg id="radar" width="188" height="118">
+        <line x1="94" y1="59" x2="94" y2="9" stroke="#1e293b" stroke-width="1"/>
+        <line x1="94" y1="59" x2="137" y2="84" stroke="#1e293b" stroke-width="1"/>
+        <line x1="94" y1="59" x2="51" y2="84" stroke="#1e293b" stroke-width="1"/>
+        <line x1="94" y1="59" x2="94" y2="109" stroke="#1e293b" stroke-width="1"/>
+        <polygon id="radar-node" fill="rgba(34,197,94,0.2)" stroke="#22c55e" stroke-width="1.5"/>
+        <polygon id="radar-cosmic" fill="none" stroke="#6366f1" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/>
+        <text x="94" y="4" fill="#22c55e" font-size="10" font-weight="700" text-anchor="middle">A</text>
+        <text x="146" y="89" fill="#3b82f6" font-size="10" font-weight="700" text-anchor="middle">W</text>
+        <text x="42" y="89" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">S</text>
+        <text x="94" y="118" fill="#ef4444" font-size="10" font-weight="700" text-anchor="middle">P</text>
+      </svg>
+      <div style="font-size:8px;color:#334155;margin-top:4px">filled = node  dashed = CAWSP(t)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = { A:"#22c55e", W:"#3b82f6", S:"#f59e0b", P:"#ef4444" };
+const AXES = ["A","W","S","P"];
+const PHASES = ["Awakening","Flourishing","Expansion","Consolidation","Tension","Upheaval","Collapse","Reckoning","Wandering","Recovery","Reformation","Transcendence"];
+const PHASE_DOM = ["A","W","S","P","P","P","A","W","S","A","W","S"];
+const CW = 680, CH = 370;
+
+let canvas = document.getElementById("net");
+let view = { x:0, y:0, scale:1, angle:0, pitch:0 };
+let drag = { active:false, type:"", startX:0, startY:0,
+             startVX:0, startVY:0, startAngle:0, startPitch:0 };
+let pinch = { active:false, startDist:0, startScale:1,
+              startAngle:0, startVAngle:0, cx:0, cy:0 };
+
+function screenToWorld(sx, sy) {
+  let rect = canvas.getBoundingClientRect();
+  let px = sx * (CW / rect.width);
+  let py = sy * (CH / rect.height);
+  let dx = px - (CW/2 + view.x);
+  let dy = py - (CH/2 + view.y);
+  let cos = Math.cos(-view.angle), sin = Math.sin(-view.angle);
+  // Invert the orthographic orbit: projection is rotation + pitch foreshortening.
+  let rx = (dx*cos - dy*sin) / view.scale;
+  let ry = (dx*sin + dy*cos) / (view.scale*Math.cos(view.pitch));
+  return { x: rx + CW/2, y: ry + CH/2 };
+}
+
+function resetView() {
+  view = { x:0, y:0, scale:1, angle:0, pitch:0 };
+  updateViewHUD(); draw();
+}
+
+function updateViewHUD() {
+  let hud = document.getElementById("view-hud");
+  if(hud) hud.textContent =
+    "zoom " + (view.scale*100).toFixed(0) + "%  "
+    + "orbit " + (view.angle*180/Math.PI).toFixed(0) + "deg  "
+    + "tilt " + (view.pitch*180/Math.PI).toFixed(0) + "deg";
+}
+let nodes = [], edges = [], settlements = [];
+let selected = null;
+let year = 0;
+let running = true;
+let tickTimer = null;
+let cosmic = {A:0.25,W:0.25,S:0.25,P:0.25};
+let waveHistory = [];
+let localWaveHistory = [];
+
+let cfg = { nodes:8, dist:260, speed:12, yearStep:1, spawnThreshold:0.8 };
+let LOCAL_CYCLE = 100;    // node-level AWSP oscillation period (years)
+let CAWSP_CYCLE = 1200;   // cosmic civilizational wave period (years)
+
+function randAWSP() {
+  let v = [Math.random(),Math.random(),Math.random(),Math.random()];
+  let s = v.reduce((a,b)=>a+b,0);
+  let n = v.map(x=>Math.round(x/s*100));
+  n[0] += 100 - n.reduce((a,b)=>a+b,0);
+  return {A:n[0],W:n[1],S:n[2],P:n[3]};
+}
+
+function awspRgb(aw, alpha) {
+  let r = Math.round((aw.P/100)*239+(aw.A/100)*34+(aw.W/100)*59+(aw.S/100)*245);
+  let g = Math.round((aw.P/100)*68+(aw.A/100)*197+(aw.W/100)*130+(aw.S/100)*158);
+  let b = Math.round((aw.P/100)*68+(aw.A/100)*94+(aw.W/100)*246+(aw.S/100)*11);
+  if(alpha !== undefined) return "rgba("+r+","+g+","+b+","+alpha+")";
+  return "rgb("+r+","+g+","+b+")";
+}
+
+function blendAWSP(a, b, t) {
+  t = (t === undefined) ? 0.5 : t;
+  let raw = {
+    A: a.A*(1-t)+b.A*t, W: a.W*(1-t)+b.W*t,
+    S: a.S*(1-t)+b.S*t, P: a.P*(1-t)+b.P*t
+  };
+  let s = raw.A+raw.W+raw.S+raw.P||1;
+  let n = {A:Math.round(raw.A/s*100),W:Math.round(raw.W/s*100),
+           S:Math.round(raw.S/s*100),P:Math.round(raw.P/s*100)};
+  n.A += 100-(n.A+n.W+n.S+n.P);
+  return n;
+}
+
+function dotAWSP(a, b) {
+  return (a.A*b.A + a.W*b.W + a.S*b.S + a.P*b.P) / 10000;
+}
+
+function euclid(a, b) {
+  return Math.sqrt(AXES.reduce((s,k)=>s+(a[k]-b[k])*(a[k]-b[k]),0));
+}
+
+function computeCosmic(yr, len) {
+  let t = 2*Math.PI*yr/len;
+  let raw = {A:Math.max(0,Math.sin(t)), W:Math.max(0,Math.sin(t+Math.PI/2)),
+             S:Math.max(0,Math.sin(t+Math.PI)), P:Math.max(0,Math.sin(t+3*Math.PI/2))};
+  let s = AXES.reduce((a,k)=>a+raw[k],0)||1;
+  return {A:raw.A/s, W:raw.W/s, S:raw.S/s, P:raw.P/s};
+}
+
+function computeLocalAWSP(baseAWSP, year, phase) {
+  // Node-level 100-year oscillation around its base AWSP vector.
+  // phase (0-2pi) gives each node a unique offset so they don't all peak together.
+  let t = 2*Math.PI*year/LOCAL_CYCLE + phase;
+  let osc = {
+    A: Math.max(0, Math.sin(t)),
+    W: Math.max(0, Math.sin(t + Math.PI/2)),
+    S: Math.max(0, Math.sin(t + Math.PI)),
+    P: Math.max(0, Math.sin(t + 3*Math.PI/2))
+  };
+  let s = osc.A+osc.W+osc.S+osc.P || 1;
+  let oscN = {A:osc.A/s*100, W:osc.W/s*100, S:osc.S/s*100, P:osc.P/s*100};
+  // 75% base character, 25% local cycle drift
+  return blendAWSP(baseAWSP, oscN, 0.25);
+}
+
+function makeNodes() {
+  return Array.from({length:cfg.nodes},(_,i)=>({
+    id:i, x:80+Math.random()*(CW-160), y:55+Math.random()*(CH-110),
+    baseAWSP:randAWSP(),
+    phase:Math.random()*Math.PI*2,
+    awsp:{A:25,W:25,S:25,P:25},
+    population:100+Math.floor(Math.random()*400),
+    tier:"village", traffic:0
+  }));
+}
+
+function makeEdges(ns, oldEdges) {
+  let out = [];
+  for(let i=0;i<ns.length;i++)
+    for(let j=i+1;j<ns.length;j++){
+      let dx=ns[i].x-ns[j].x, dy=ns[i].y-ns[j].y;
+      let d=Math.sqrt(dx*dx+dy*dy);
+      if(d<=cfg.dist) {
+        let old = oldEdges && oldEdges.find(function(e){return e.a===i&&e.b===j;});
+        out.push({a:i, b:j, dist:d, flow:0, cumFlow: old?old.cumFlow:0});
+      }
+    }
+  return out;
+}
+
+function reset() {
+  nodes = makeNodes();
+  edges = makeEdges(nodes, []);
+  settlements = [];
+  selected = null;
+  year = 0;
+  waveHistory = [];
+  localWaveHistory = [];
+  document.getElementById("town-events").textContent="No new settlements yet";
+  updateHeader();
+  renderTable();
+  updateRightPanel();
+  draw();
+}
+
+// ── Simulation tick ──────────────────────────────────────────────────────────
+function tick() {
+  year += cfg.yearStep;
+
+  // CAWSP: 1200-year cosmic oscillation (global field)
+  cosmic = computeCosmic(year, CAWSP_CYCLE);
+  waveHistory.push(cosmic);
+  if(waveHistory.length > 100) waveHistory.shift();
+
+  // local wave: average AWSP across all nodes this tick
+  if(nodes.length) {
+    let avg = {A:0,W:0,S:0,P:0};
+    nodes.forEach(function(n){AXES.forEach(function(k){avg[k]+=n.awsp[k];});});
+    AXES.forEach(function(k){avg[k]/=nodes.length*100;});  // normalize to 0-1
+    localWaveHistory.push(avg);
+    if(localWaveHistory.length > 100) localWaveHistory.shift();
+  }
+
+  // LOCAL AWSP: each node oscillates on its own 100-year cycle
+  nodes = nodes.map(function(nd) {
+    let base = nd.baseAWSP || nd.awsp;
+    let localA = computeLocalAWSP(base, year, nd.phase||0);
+    return Object.assign({}, nd, {awsp: localA, baseAWSP: base});
+  });
+
+  // ── Edge flow: affinity × geometric mean of populations ──────────────────
+  edges = edges.map(function(e) {
+    let na = nodes[e.a], nb = nodes[e.b];
+    if(!na||!nb) return e;
+    let aff = dotAWSP(na.awsp, nb.awsp);          // 0-1 alignment
+    let popMean = Math.sqrt(na.population * nb.population);
+    let flow = (aff * popMean) / 5000;             // scale to ~0-1 range
+    return {a:e.a, b:e.b, dist:e.dist, flow:flow, cumFlow:e.cumFlow+flow};
+  });
+
+  // ── Node traffic = sum of attached edge flows ─────────────────────────────
+  nodes = nodes.map(function(nd, i) {
+    let edgeFlow = edges
+      .filter(function(e){return e.a===i||e.b===i;})
+      .reduce(function(s,e){return s+e.flow;}, 0);
+    let pop = nd.population + edgeFlow * 50;
+    let tier = pop>5000?"city":pop>500?"town":"village";
+    return {id:nd.id, x:nd.x, y:nd.y,
+            baseAWSP:nd.baseAWSP, phase:nd.phase,
+            awsp:nd.awsp,
+            population:pop, tier:tier, traffic:edgeFlow, spawned:nd.spawned};
+  });
+
+  // ── Spawn new node at peak-flow edge midpoint ─────────────────────────────
+  const SPAWN_EVERY = 80;
+  const FLOW_THRESHOLD = cfg.spawnThreshold;
+  // Test boundary crossings so 5/10/50-year steps cannot skip a founding year.
+  if(Math.floor((year-cfg.yearStep)/SPAWN_EVERY) < Math.floor(year/SPAWN_EVERY) && nodes.length < 40) {
+    let topEdge = edges.reduce(function(best, e) {
+      return (!best || e.cumFlow > best.cumFlow) ? e : best;
+    }, null);
+    if(topEdge && topEdge.cumFlow > FLOW_THRESHOLD) {
+      let na = nodes[topEdge.a], nb = nodes[topEdge.b];
+      let jitter = function(){ return (Math.random()-0.5)*30; };
+      let mx = (na.x+nb.x)/2 + jitter();
+      let my = (na.y+nb.y)/2 + jitter();
+      mx = Math.max(60, Math.min(CW-60, mx));
+      my = Math.max(40, Math.min(CH-40, my));
+      let newNode = {
+        id: nodes.length,
+        x: mx, y: my,
+        baseAWSP: blendAWSP(na.baseAWSP||na.awsp, nb.baseAWSP||nb.awsp),
+        phase: Math.random()*Math.PI*2,
+        awsp: blendAWSP(na.awsp, nb.awsp),
+        population: 80,
+        tier: "village",
+        traffic: 0,
+        spawned: true
+      };
+      nodes.push(newNode);
+      // reset that edge cumFlow so next spawn goes to next hotspot
+      edges = edges.map(function(e){
+        return (e===topEdge) ? {a:e.a,b:e.b,dist:e.dist,flow:e.flow,cumFlow:0} : e;
+      });
+      edges = makeEdges(nodes, edges);
+      settlements.push({
+        nodeId: newNode.id,
+        x: newNode.x, y: newNode.y,
+        name: "Settlement " + (settlements.length+1),
+        spawnYear: year
+      });
+      document.getElementById("town-events").textContent =
+        "Year "+year+": "+settlements[settlements.length-1].name+
+        " founded on trade corridor N"+na.id+"–N"+nb.id;
+    }
+  }
+
+  updateHeader();
+  drawWave();
+  renderTable();
+  if(selected!==null) updateRightPanel();
+  draw();
+}
+
+// ── Canvas draw ──────────────────────────────────────────────────────────────
+function draw() {
+  let ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,CW,CH);
+  ctx.save();
+  ctx.translate(CW/2 + view.x, CH/2 + view.y);
+  ctx.rotate(view.angle);
+  // Orthographic orbit of the simulation plane; no imaginary terrain heights.
+  ctx.scale(view.scale, view.scale*Math.cos(view.pitch));
+  ctx.translate(-CW/2, -CH/2);
+
+  // grid
+  ctx.strokeStyle="#1e293b"; ctx.lineWidth=0.5;
+  for(let x=0;x<CW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CH);ctx.stroke();}
+  for(let y=0;y<CH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(CW,y);ctx.stroke();}
+
+  // edges — width and glow driven by real cumulative flow
+  let maxFlow = edges.reduce(function(m,e){return Math.max(m,e.cumFlow);},0.001);
+  edges.forEach(function(e){
+    let na=nodes[e.a], nb=nodes[e.b]; if(!na||!nb) return;
+    let norm = Math.min(e.cumFlow / maxFlow, 1);           // 0-1 relative flow
+    let liveNorm = Math.min(e.flow * 20, 1);               // current tick flow
+    let w = 0.4 + norm * 4;
+    // base route
+    ctx.beginPath(); ctx.moveTo(na.x,na.y); ctx.lineTo(nb.x,nb.y);
+    ctx.strokeStyle="rgba(99,102,241,"+(0.15+norm*0.55).toFixed(2)+")";
+    ctx.lineWidth=w; ctx.stroke();
+    // live flow glow on active edges
+    if(liveNorm > 0.1) {
+      ctx.beginPath(); ctx.moveTo(na.x,na.y); ctx.lineTo(nb.x,nb.y);
+      ctx.strokeStyle="rgba(245,158,11,"+(liveNorm*0.45).toFixed(2)+")";
+      ctx.lineWidth=w*2.5; ctx.stroke();
+    }
+    // midpoint dot on high-cumFlow edges (intersection marker)
+    if(norm > 0.6) {
+      let mx=(na.x+nb.x)/2, my=(na.y+nb.y)/2;
+      ctx.beginPath(); ctx.arc(mx,my,2.5,0,Math.PI*2);
+      ctx.fillStyle="rgba(245,158,11,"+(norm*0.8).toFixed(2)+")";
+      ctx.fill();
+    }
+  });
+
+  // settlement halos
+  settlements.forEach(function(s){
+    let nd=nodes[s.nodeId]; if(!nd) return;
+    ctx.beginPath(); ctx.arc(nd.x,nd.y,28,0,Math.PI*2);
+    ctx.strokeStyle="rgba(245,158,11,0.5)"; ctx.lineWidth=2;
+    ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#f59e0b"; ctx.font="9px monospace";
+    ctx.textAlign="center"; ctx.fillText(s.name+" ("+nd.tier+")",nd.x,nd.y+42);
+  });
+
+  // nodes
+  nodes.forEach(function(nd,i){
+    let r = nd.tier==="city"?18:nd.tier==="town"?14:10;
+    let col = awspRgb(nd.awsp);
+    let isSel = selected===i;
+
+    ctx.beginPath();
+    for(let k=0;k<6;k++){
+      let ang=(Math.PI/3)*k-Math.PI/6;
+      let px=nd.x+r*Math.cos(ang), py=nd.y+r*Math.sin(ang);
+      k===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    let g=ctx.createRadialGradient(nd.x,nd.y,0,nd.x,nd.y,r);
+    g.addColorStop(0,awspRgb(nd.awsp,0.8)); g.addColorStop(1,awspRgb(nd.awsp,0.27));
+    ctx.fillStyle=g; ctx.fill();
+    ctx.strokeStyle=isSel?"#ffffff":col; ctx.lineWidth=isSel?2.5:1; ctx.stroke();
+
+    // cawsp alignment ring
+    let cVec={A:cosmic.A*100,W:cosmic.W*100,S:cosmic.S*100,P:cosmic.P*100};
+    let align = 1/(1+euclid(nd.awsp,cVec)/100);
+    if(align>0.6){
+      ctx.beginPath(); ctx.arc(nd.x,nd.y,r+5,0,Math.PI*2*align);
+      ctx.strokeStyle="rgba(99,102,241,"+align.toFixed(2)+")"; ctx.lineWidth=1.5; ctx.stroke();
+    }
+
+    ctx.fillStyle="#e2e8f0";
+    ctx.font=(isSel?"bold ":"")+"9px monospace";
+    ctx.textAlign="center";
+    ctx.fillText("N"+i,nd.x,nd.y+r+13);
+    // spawned node marker ring
+    if(nd.spawned) {
+      ctx.beginPath(); ctx.arc(nd.x,nd.y,r+8,0,Math.PI*2);
+      ctx.strokeStyle="rgba(245,158,11,0.6)"; ctx.lineWidth=1;
+      ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+    }
+  });
+  ctx.restore();
+}
+
+// ── Wave sparkline ───────────────────────────────────────────────────────────
+function drawWave() {
+  let svg = document.getElementById("wave-svg");
+  svg.innerHTML = "";
+  if(waveHistory.length < 2) return;
+  AXES.forEach(function(ax){
+    let pts = waveHistory.map(function(p,xi){
+      return ((xi/(waveHistory.length-1))*178).toFixed(1)+","+(24-(p[ax]*20)).toFixed(1);
+    }).join(" ");
+    let line = document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    line.setAttribute("points",pts);
+    line.setAttribute("fill","none");
+    line.setAttribute("stroke",COLORS[ax]);
+    line.setAttribute("stroke-width","1.5");
+    line.setAttribute("opacity","0.85");
+    svg.appendChild(line);
+  });
+
+  // axis bars
+  let barDiv = document.getElementById("axis-bars");
+  barDiv.innerHTML = "";
+  AXES.forEach(function(ax){
+    let pct = Math.round(cosmic[ax]*100);
+    let wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex;align-items:center;gap:5px";
+    wrap.innerHTML = '<span style="font-size:9px;color:'+COLORS[ax]+';font-weight:700">'+ax+'</span>'
+      +'<div style="width:55px;height:4px;background:#1e293b;border-radius:2px"><div style="width:'+pct+'%;height:100%;background:'+COLORS[ax]+';border-radius:2px;transition:width 0.3s"></div></div>'
+      +'<span style="font-size:9px;color:#475569;min-width:22px">'+pct+'%</span>';
+    barDiv.appendChild(wrap);
+  });
+
+  let domAxis = AXES.reduce((a,k)=>cosmic[k]>cosmic[a]?k:a,"A");
+  document.getElementById("dom-label").textContent="DOM: "+COLORS_LABELS[domAxis].toUpperCase();
+  document.getElementById("dom-label").style.color=COLORS[domAxis];
+}
+
+const COLORS_LABELS = {A:"Anima",W:"Will",S:"Secular",P:"Power"};
+
+// ── Header ───────────────────────────────────────────────────────────────────
+function updateHeader() {
+  document.getElementById("h-year").textContent = year;
+  let pi = Math.floor(year/15)%12;
+  let ph = document.getElementById("h-phase");
+  ph.textContent = PHASES[pi];
+  ph.style.color = COLORS[PHASE_DOM[pi]];
+  ph.style.background = COLORS[PHASE_DOM[pi]]+"22";
+  document.getElementById("h-settle").textContent = settlements.length;
+
+  // phase clock
+  let grid = document.getElementById("phase-grid");
+  grid.innerHTML = "";
+  PHASES.forEach(function(name,i){
+    let active = i===pi;
+    let c = COLORS[PHASE_DOM[i]];
+    let div = document.createElement("div");
+    div.className = "phase-item";
+    div.style.color = active?c:"#334155";
+    div.style.background = active?c+"33":"transparent";
+    div.style.borderColor = active?c+"55":"transparent";
+    div.style.fontWeight = active?"700":"400";
+    div.textContent = (i+1)+". "+name;
+    grid.appendChild(div);
+  });
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+function renderTable() {
+  let tbody = document.getElementById("tbl-body");
+  tbody.innerHTML = "";
+  nodes.forEach(function(nd,i){
+    let cVec={A:cosmic.A*100,W:cosmic.W*100,S:cosmic.S*100,P:cosmic.P*100};
+    let ben = (1/(1+euclid(nd.awsp,cVec)/100)).toFixed(3);
+    let col = awspRgb(nd.awsp);
+    let tierCol = nd.tier==="city"?"#f59e0b":nd.tier==="town"?"#6366f1":"#334155";
+    let tr = document.createElement("tr");
+    if(selected===i) tr.classList.add("sel");
+    tr.innerHTML =
+      '<td style="color:'+col+';font-weight:700">N'+i+'</td>'
+      +'<td><span style="color:'+tierCol+';border:1px solid '+tierCol+';padding:1px 5px;border-radius:2px;font-size:8px">'+nd.tier+'</span></td>'
+      +'<td style="color:#94a3b8">'+Math.floor(nd.population)+'</td>'
+      +'<td style="color:'+(nd.traffic>0.5?"#f59e0b":nd.traffic>0.1?"#6366f1":"#475569")+'">'+
+        nd.traffic.toFixed(3)+"</td>"
+      +'<td style="color:#22c55e">'+nd.awsp.A+'</td>'
+      +'<td style="color:#3b82f6">'+nd.awsp.W+'</td>'
+      +'<td style="color:#f59e0b">'+nd.awsp.S+'</td>'
+      +'<td style="color:#ef4444">'+nd.awsp.P+'</td>'
+      +'<td style="color:'+(parseFloat(ben)>0.7?"#22c55e":"#475569")+'">'+ben+'</td>';
+    tr.addEventListener("click",function(){selectNode(i);});
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Right panel ──────────────────────────────────────────────────────────────
+function updateRightPanel() {
+  if(selected===null||!nodes[selected]){
+    document.getElementById("right-empty").style.display="flex";
+    document.getElementById("right-editor").style.display="none";
+    return;
+  }
+  document.getElementById("right-empty").style.display="none";
+  document.getElementById("right-editor").style.display="block";
+
+  let nd = nodes[selected];
+  let col = awspRgb(nd.awsp);
+  document.getElementById("node-color-dot").style.background=col;
+  document.getElementById("node-title").textContent="NODE "+selected;
+  document.getElementById("node-sub").textContent=nd.tier.toUpperCase()+" / POP "+Math.floor(nd.population);
+  // show local cycle phase
+  let phaseDeg = nd.phase ? Math.round(nd.phase*180/Math.PI) : 0;
+  let cyclePos = ((year % LOCAL_CYCLE + LOCAL_CYCLE) % LOCAL_CYCLE).toFixed(0);
+  document.getElementById("node-sub").textContent +=
+    "  |  phase "+phaseDeg+"deg  yr"+cyclePos+"/100";
+
+  // AWSP sliders
+  let sliderDiv = document.getElementById("awsp-sliders");
+  sliderDiv.innerHTML="";
+  AXES.forEach(function(ax){
+    let val = nd.awsp[ax];
+    let c = COLORS[ax];
+    let bg = "linear-gradient(to right,"+c+" "+val+"%,#1e293b "+val+"%)";
+    let div = document.createElement("div");
+    div.style.marginBottom="10px";
+    div.innerHTML =
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+      +'<span style="color:'+c+';font-size:10px;font-weight:700">'+ax+' '+COLORS_LABELS[ax]+'</span>'
+      +'<span style="color:#94a3b8;font-size:10px">'+val+'</span></div>'
+      +'<input type="range" min="0" max="100" value="'+val+'" data-axis="'+ax+'" '
+      +'style="background:'+bg+'">';
+    sliderDiv.appendChild(div);
+    div.querySelector("input").addEventListener("input",function(){
+      let newVal = parseInt(this.value);
+      let axis = this.dataset.axis;
+      let nd2 = nodes[selected];
+      let others = AXES.filter(k=>k!==axis);
+      let newAWSP = {...nd2.awsp,[axis]:newVal};
+      let rest = 100-newVal;
+      let oldRest = others.reduce((s,k)=>s+nd2.awsp[k],0)||1;
+      others.forEach(k=>{newAWSP[k]=Math.round(nd2.awsp[k]/oldRest*rest);});
+      let diff = 100-AXES.reduce((s,k)=>s+newAWSP[k],0);
+      newAWSP[others[0]]+=diff;
+      nodes[selected]={...nd2,awsp:newAWSP};
+      updateRightPanel(); renderTable(); draw();
+    });
+  });
+
+  // bayan
+  let cVec={A:cosmic.A*100,W:cosmic.W*100,S:cosmic.S*100,P:cosmic.P*100};
+  let d = euclid(nd.awsp,cVec);
+  let ben = 1/(1+d/100);
+  document.getElementById("stat-dist").textContent=d.toFixed(1);
+  document.getElementById("stat-bayan").textContent=ben.toFixed(3);
+  document.getElementById("stat-bayan").style.color=ben>0.7?"#22c55e":"#94a3b8";
+  document.getElementById("stat-traffic").textContent=nd.traffic.toFixed(4)+" flow/yr";
+  document.getElementById("stat-traffic").style.color=nd.traffic>0.5?"#f59e0b":nd.traffic>0.1?"#6366f1":"#94a3b8";
+  let fill=document.getElementById("bayan-fill");
+  fill.style.width=Math.round(ben*100)+"%";
+  fill.style.background=ben>0.7?"#22c55e":ben>0.4?"#f59e0b":"#ef4444";
+  document.getElementById("spawn-tag").style.display=nd.traffic>0.5?"block":"none";
+
+  // radar
+  let radarAngles = [
+    {ax:"A",cx:94,cy:9},   // top
+    {ax:"W",cx:137,cy:84}, // right
+    {ax:"S",cx:51,cy:84},  // left
+    {ax:"P",cx:94,cy:109}  // bottom
+  ];
+  let cx=94, cy=59, r=50;
+  function radarPts(awspObj,scale) {
+    return radarAngles.map(function(ra,i){
+      let ang=(i/4)*Math.PI*2-Math.PI/2;
+      let rad=(awspObj[ra.ax]/(scale||100))*r;
+      return (cx+Math.cos(ang)*rad).toFixed(1)+","+(cy+Math.sin(ang)*rad).toFixed(1);
+    }).join(" ");
+  }
+  let nodeCol=awspRgb(nd.awsp);
+  document.getElementById("radar-node").setAttribute("points",radarPts(nd.awsp,100));
+  document.getElementById("radar-node").setAttribute("fill",awspRgb(nd.awsp,0.27));
+  document.getElementById("radar-node").setAttribute("stroke",nodeCol);
+  let cPts=radarAngles.map(function(ra,i){
+    let ang=(i/4)*Math.PI*2-Math.PI/2;
+    let rad=cosmic[ra.ax]*r;
+    return (cx+Math.cos(ang)*rad).toFixed(1)+","+(cy+Math.sin(ang)*rad).toFixed(1);
+  }).join(" ");
+  document.getElementById("radar-cosmic").setAttribute("points",cPts);
+}
+
+function selectNode(i) {
+  selected = i;
+  renderTable();
+  updateRightPanel();
+  draw();
+}
+
+// ── Slider controls ──────────────────────────────────────────────────────────
+function setupSlider(id, valId, suffix, key, cb) {
+  let sl = document.getElementById(id);
+  sl.addEventListener("input",function(){
+    cfg[key]=parseInt(this.value);
+    document.getElementById(valId).textContent=this.value+suffix;
+    if(cb) cb();
+    updateSliderBg(sl,"#6366f1");
+  });
+  updateSliderBg(sl,"#6366f1");
+}
+function updateSliderBg(el,color) {
+  let pct = ((el.value-el.min)/(el.max-el.min)*100).toFixed(1);
+  el.style.background="linear-gradient(to right,"+color+" "+pct+"%,#1e293b "+pct+"%)";
+}
+
+setupSlider("s-nodes","v-nodes","","nodes",function(){reset();});
+setupSlider("s-dist","v-dist","px","dist",function(){edges=makeEdges(nodes,edges);draw();});
+setupSlider("s-speed","v-speed","x","speed",function(){restartTimer();});
+let spawnSlider=document.getElementById("s-spawn");
+spawnSlider.addEventListener("input",function(){
+  cfg.spawnThreshold=Number(this.value);
+  document.getElementById("v-spawn").textContent=cfg.spawnThreshold.toFixed(1);
+  updateSliderBg(this,"#f59e0b");
+});
+updateSliderBg(spawnSlider,"#f59e0b");
+document.getElementById("btn-top").addEventListener("click",function(){resetView();});
+document.getElementById("btn-iso").addEventListener("click",function(){
+  view.angle=Math.PI/4;
+  view.pitch=Math.PI/4;
+  updateViewHUD(); draw();
+});
+
+
+document.getElementById("btn-run").addEventListener("click",function(){
+  running=!running;
+  this.textContent=running?"|| PAUSE":">> RESUME";
+  this.classList.toggle("active",running);
+  restartTimer();
+});
+document.getElementById("btn-reset").addEventListener("click",function(){reset(); resetView();});
+document.querySelectorAll(".step-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    cfg.yearStep = parseInt(this.dataset.step);
+    document.querySelectorAll(".step-btn").forEach(function(b){
+      b.classList.remove("active");
+      b.style.borderColor="#334155"; b.style.color="#64748b";
+    });
+    this.classList.add("active");
+    this.style.borderColor="#6366f1"; this.style.color="#6366f1";
+  });
+});
+document.getElementById("btn-rand").addEventListener("click",function(){
+  nodes=nodes.map(function(nd){
+    let b=randAWSP();
+    return Object.assign({},nd,{baseAWSP:b, phase:Math.random()*Math.PI*2, awsp:b});
+  });
+  renderTable(); draw(); if(selected!==null) updateRightPanel();
+});
+document.getElementById("btn-rand-node").addEventListener("click",function(){
+  if(selected===null) return;
+  nodes[selected]={...nodes[selected],awsp:randAWSP()};
+  updateRightPanel(); renderTable(); draw();
+});
+
+// ── Canvas interaction: pan, zoom, rotate, click ─────────────────────────
+canvas.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+canvas.addEventListener("mousedown", function(e){
+  e.preventDefault();
+  drag.active=true;
+  drag.startX=e.clientX; drag.startY=e.clientY;
+  drag.startVX=view.x; drag.startVY=view.y;
+  drag.startVAngle=view.angle;
+  drag.startPitch=view.pitch;
+  drag.type = e.button===2 ? "rotate" : "pan";
+  drag.moved=false;
+});
+
+canvas.addEventListener("mousemove", function(e){
+  if(!drag.active) return;
+  let dx=e.clientX-drag.startX, dy=e.clientY-drag.startY;
+  if(Math.hypot(dx,dy)>3) drag.moved=true;
+  if(drag.type==="pan") {
+    view.x=drag.startVX+dx;
+    view.y=drag.startVY+dy;
+  } else {
+    // Orbit horizontally and tilt vertically, with a 72-degree safety cap.
+    view.angle=drag.startVAngle + dx*0.008;
+    view.pitch=Math.max(0,Math.min(72*Math.PI/180,drag.startPitch + dy*0.006));
+  }
+  updateViewHUD(); draw();
+});
+
+canvas.addEventListener("mouseup", function(e){
+  if(!drag.active) return;
+  drag.active=false;
+  if(!drag.moved && drag.type==="pan") {
+    // treat as click
+    let rect=canvas.getBoundingClientRect();
+    let w=screenToWorld(e.clientX-rect.left, e.clientY-rect.top);
+    let closest=null, minD=22;
+    nodes.forEach(function(nd,i){
+      let d=Math.sqrt((nd.x-w.x)*(nd.x-w.x)+(nd.y-w.y)*(nd.y-w.y));
+      if(d<minD){minD=d;closest=i;}
+    });
+    selected=closest;
+    renderTable(); updateRightPanel(); draw();
+  }
+});
+
+canvas.addEventListener("mouseleave", function(){ drag.active=false; });
+
+canvas.addEventListener("dblclick", function(){ resetView(); });
+
+canvas.addEventListener("wheel", function(e){
+  e.preventDefault();
+  let rect=canvas.getBoundingClientRect();
+  let mx=(e.clientX-rect.left)*(CW/rect.width), my=(e.clientY-rect.top)*(CH/rect.height);
+  let factor = e.deltaY<0 ? 1.12 : 0.89;
+  let newScale=Math.max(0.15, Math.min(6, view.scale*factor));
+  let r=newScale/view.scale;
+  // zoom toward cursor
+  view.x=(1-r)*(mx-CW/2)+r*view.x;
+  view.y=(1-r)*(my-CH/2)+r*view.y;
+  view.scale=newScale;
+  updateViewHUD(); draw();
+}, {passive:false});
+
+// ── Touch: pan (1 finger), pinch-zoom + rotate (2 fingers) ───────────────
+canvas.addEventListener("touchstart", function(e){
+  e.preventDefault();
+  if(e.touches.length===1){
+    drag.active=true; drag.type="pan"; drag.moved=false;
+    drag.startX=e.touches[0].clientX; drag.startY=e.touches[0].clientY;
+    drag.startVX=view.x; drag.startVY=view.y;
+  } else if(e.touches.length===2){
+    drag.active=false;
+    pinch.active=true;
+    let t0=e.touches[0], t1=e.touches[1];
+    let dx=t1.clientX-t0.clientX, dy=t1.clientY-t0.clientY;
+    pinch.startDist=Math.sqrt(dx*dx+dy*dy);
+    pinch.startScale=view.scale;
+    pinch.startAngle=Math.atan2(dy,dx);
+    pinch.startVAngle=view.angle;
+    pinch.cx=(t0.clientX+t1.clientX)/2;
+    pinch.cy=(t0.clientY+t1.clientY)/2;
+    drag.startVX=view.x; drag.startVY=view.y;
+  }
+},{passive:false});
+
+canvas.addEventListener("touchmove", function(e){
+  e.preventDefault();
+  if(drag.active && e.touches.length===1){
+    let dx=e.touches[0].clientX-drag.startX;
+    let dy=e.touches[0].clientY-drag.startY;
+    view.x=drag.startVX+dx; view.y=drag.startVY+dy;
+    drag.moved=true;
+    updateViewHUD(); draw();
+  } else if(pinch.active && e.touches.length===2){
+    let t0=e.touches[0],t1=e.touches[1];
+    let dx=t1.clientX-t0.clientX, dy=t1.clientY-t0.clientY;
+    let dist=Math.sqrt(dx*dx+dy*dy);
+    let ang=Math.atan2(dy,dx);
+    let newScale=Math.max(0.15,Math.min(6,pinch.startScale*(dist/pinch.startDist)));
+    let r=newScale/view.scale;
+    let rect=canvas.getBoundingClientRect();
+    let cx=pinch.cx-rect.left, cy=pinch.cy-rect.top;
+    view.x=(1-r)*(cx-CW/2)+r*view.x;
+    view.y=(1-r)*(cy-CH/2)+r*view.y;
+    view.scale=newScale;
+    view.angle=pinch.startVAngle+(ang-pinch.startAngle);
+    updateViewHUD(); draw();
+  }
+},{passive:false});
+
+canvas.addEventListener("touchend", function(e){
+  if(!drag.moved && drag.active && e.changedTouches.length===1){
+    let t=e.changedTouches[0];
+    let rect=canvas.getBoundingClientRect();
+    let w=screenToWorld(t.clientX-rect.left, t.clientY-rect.top);
+    let closest=null, minD=22;
+    nodes.forEach(function(nd,i){
+      let d=Math.sqrt((nd.x-w.x)*(nd.x-w.x)+(nd.y-w.y)*(nd.y-w.y));
+      if(d<minD){minD=d;closest=i;}
+    });
+    selected=closest;
+    renderTable(); updateRightPanel(); draw();
+  }
+  drag.active=false; pinch.active=false;
+},{passive:false});
+
+
+// ── Timer ────────────────────────────────────────────────────────────────────
+function restartTimer() {
+  if(tickTimer) clearInterval(tickTimer);
+  if(!running) return;
+  tickTimer=setInterval(tick,1000/cfg.speed);
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+reset();
+drawWave();
+restartTimer();
+</script>
+</body>
+</html>
