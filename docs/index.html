@@ -1,35 +1,19 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="DIWA Research Labs documentation, research and licensing resources">
-  <title>DIWA Research Labs — Documentation</title>
-  <style>
-    :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#10151e;color:#ecf1f8}
-    *{box-sizing:border-box}body{margin:0}main{max-width:960px;margin:auto;padding:4rem 1.5rem 6rem}
-    a{color:#9cc3ff}a:focus-visible{outline:2px solid #9cc3ff;outline-offset:3px}
-    .eyebrow{font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;color:#9db0c7}
-    h1{font-size:clamp(2.1rem,5vw,3.7rem);margin:.5rem 0 1rem;line-height:1.1}
-    p{line-height:1.7;color:#c9d4e2} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-top:2rem}
-    .card{display:block;text-decoration:none;color:inherit;border:1px solid #344252;background:#192332;border-radius:12px;padding:1.35rem;min-height:150px}
-    .card:hover{border-color:#9cc3ff;background:#202d40}.card h2{font-size:1.15rem;margin:.1rem 0 .6rem;color:#d9e8ff}.card p{font-size:.94rem;margin:0}
-    footer{margin-top:3rem;border-top:1px solid #344252;padding-top:1rem;color:#9db0c7;font-size:.85rem}
-  </style>
-</head>
-<body>
-  <main>
-    <div class="eyebrow">DIWA Research Labs</div>
-    <h1>Documentation &amp; Research</h1>
-    <p>Explore publicly available DIWA project documentation, research materials, specifications and licensing information. This site is a documentation landing page, not the simulator runtime.</p>
-    <section class="grid" aria-label="Resources">
-      <a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/docs"><h2>Documentation</h2><p>Browse the current documentation files in GitHub.</p></a>
-      <a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/licenses"><h2>Licensing</h2><p>Read the project licensing and contributor terms.</p></a>
-      <a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/templates"><h2>Templates</h2><p>Find public project templates.</p></a>
-      <a class="card" href="https://github.com/DIWA-labs/ssp-spec"><h2>SSP specification</h2><p>Explore the separate public Semantic State Protocol repository.</p></a>
-      <a class="card" href="https://github.com/DIWA-labs/DIWA-Documents"><h2>Repository</h2><p>Return to the DIWA-Documents repository overview.</p></a>
-    </section>
-    <footer>DIWA Research Labs · Public documentation portal · Consult repository licensing files for applicable terms.</footer>
-  </main>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="DIWA Research Labs simulations, experimental tools, documentation and research"><title>DIWA Research Labs — Simulations &amp; Documentation</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#0c1420;color:#e9f0f9}*{box-sizing:border-box}body{margin:0}main{width:min(1050px,100%);margin:auto;padding:3rem 1.1rem 5rem}h1{font-size:clamp(2.2rem,6vw,4rem);margin:.5rem 0;line-height:1.1}h2{font-size:1.6rem;margin-top:2.5rem}p{line-height:1.65;color:#bdd0e4}a{color:#a4c7ff}a:focus-visible{outline:3px solid #a4c7ff;outline-offset:4px}
+.kicker{font-size:.85rem;text-transform:uppercase;letter-spacing:.15em;color:#a9b9cd}.intro{max-width:780px;font-size:1.1rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1.2rem 0}.card{display:block;padding:1.25rem;text-decoration:none;color:inherit;background:#172333;border:1px solid #344a65;border-radius:13px;min-height:150px}.card:hover{border-color:#91baff;background:#1b2b41}.card h3{margin:.2rem 0 .6rem;color:#dce9fc;font-size:1.15rem}.card p{font-size:.93rem;margin:0}.tag{font-size:.73rem;color:#a8c5f9;letter-spacing:.08em;text-transform:uppercase}.notice{padding:1rem 1.25rem;background:#192334;border-left:3px solid #91baff;border-radius:5px}footer{margin-top:2.8rem;border-top:1px solid #344a65;padding-top:1.2rem;color:#a9b9cd;font-size:.85rem}
+</style></head><body><main><div class="kicker">DIWA Research Labs</div><h1>Explore social emergence</h1><p class="intro">Interactive, browser-based experiments in network interaction, cultural influence, trade flow, and settlement formation. Choose a preset or configure your own experiment.</p>
+<h2>Interactive simulations</h2><div class="grid">
+<a class="card" href="simulator-v3.html"><span class="tag">Standalone · Baseline</span><h3>Social dynamics simulator</h3><p>Run the existing network, AWSP, flow, and settlement simulator with interactive controls and camera orbit.</p></a>
+<a class="card" href="simulator-custom.html?nodes=12&amp;dist=330&amp;speed=25&amp;step=10&amp;threshold=0.3&amp;view=top&amp;paused=0"><span class="tag">Preset · Emergence</span><h3>Trade corridors &amp; towns</h3><p>Explore a denser network and lower settlement threshold to examine where new towns appear.</p></a>
+<a class="card" href="simulator-custom.html?nodes=8&amp;dist=220&amp;speed=12&amp;step=5&amp;threshold=1.5&amp;view=orbit&amp;paused=1"><span class="tag">Preset · Camera</span><h3>Orbit &amp; inspect</h3><p>Start paused with the tilted camera to inspect nodes, connections, and the social field.</p></a>
+<a class="card" href="experiment-builder.html"><span class="tag">Custom · Your variables</span><h3>Build an experiment →</h3><p>Enter your own node count, connection distance, speed, year step, settlement threshold, and initial view.</p></a>
+</div>
+<div class="notice"><strong>Research note.</strong> These are experimental standalone demonstrations, not sociological predictions or the complete DIWA engine. Preset settings change conditions, not the underlying model. The public site does not disclose private semantic kernel implementations.</div>
+<h2>Documentation &amp; repositories</h2><div class="grid">
+<a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/docs"><h3>Documentation</h3><p>Browse available project documents and implementation notes.</p></a>
+<a class="card" href="https://github.com/DIWA-labs/ssp-spec"><h3>SSP — Semantic State Protocol</h3><p>Review the independent public interoperability specification and its experimental examples.</p></a>
+<a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/licenses"><h3>Licensing</h3><p>Read licensing and contribution policies before reusing materials.</p></a>
+<a class="card" href="https://github.com/DIWA-labs/DIWA-Documents/tree/main/templates"><h3>Templates</h3><p>Find published reference templates.</p></a>
+</div><footer>DIWA Research Labs · Public simulations and research · Project status: experimental</footer></main></body></html>

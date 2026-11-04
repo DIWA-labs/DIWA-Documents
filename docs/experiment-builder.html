@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIWA — Experiment Builder</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#0c1420;color:#e9f0f9}*{box-sizing:border-box}body{margin:0}
+main{width:min(900px,100%);margin:auto;padding:2.4rem 1rem 4rem}h1{font-size:clamp(2rem,5vw,3.1rem);margin:.35rem 0}h2{font-size:1.2rem}
+p{line-height:1.6;color:#b9cadc}a{color:#a4c7ff}form{background:#172333;padding:1.4rem;border:1px solid #324761;border-radius:14px;margin-top:1.6rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:1.2rem}.field{display:flex;flex-direction:column;gap:.4rem}label{font-weight:650}small{color:#a9bed4;line-height:1.45}
+input,select{font:inherit;color:#eff6ff;background:#101b2a;border:1px solid #586d84;border-radius:8px;padding:.75rem;width:100%;min-height:46px}input:focus-visible,select:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid #93bbff;outline-offset:3px}
+.actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem}button,.btn{font:inherit;font-weight:700;display:inline-block;background:#779ef6;color:#091120;border:0;border-radius:9px;padding:.83rem 1.2rem;cursor:pointer;text-decoration:none;min-height:46px}.secondary{background:#26394d;color:#e7f0fa;border:1px solid #607a94}.note{font-size:.9rem;color:#b9cadc;margin-top:1rem}#error{color:#ffb5b5;min-height:1.5rem}#linkbox{display:none;margin-top:1rem;overflow-wrap:anywhere;background:#0c1726;padding:1rem;border-radius:8px;border:1px solid #344d68}
+</style></head><body><main>
+<a href="./index.html">← DIWA Research Labs</a><p style="text-transform:uppercase;letter-spacing:.12em;font-size:.8rem">Public simulation experiments</p><h1>Configure a simulation</h1>
+<p>Set starting conditions for the standalone DIWA social-dynamics demonstration. Generate a shareable URL and run the experiment directly in your browser—no login or server required.</p>
+<form id="config" novalidate><div class="grid">
+<div class="field"><label for="nodes">Initial nodes</label><input id="nodes" name="nodes" type="number" min="2" max="20" step="1" value="8" required><small>Starting social locations (2–20).</small></div>
+<div class="field"><label for="dist">Connection distance</label><input id="dist" name="dist" type="number" min="80" max="450" step="1" value="260" required><small>Maximum map distance for links, in simulator units.</small></div>
+<div class="field"><label for="speed">Automatic ticks/second</label><input id="speed" name="speed" type="number" min="1" max="60" step="1" value="12" required><small>Playback rate (1–60).</small></div>
+<div class="field"><label for="step">Years advanced per tick</label><select id="step" name="step"><option value="1">1 year</option><option value="5">5 years</option><option value="10">10 years</option><option value="50">50 years</option></select><small>Higher values accelerate historical time.</small></div>
+<div class="field"><label for="threshold">Settlement flow threshold</label><input id="threshold" name="threshold" type="number" min="0.2" max="5" step="0.1" value="0.8" required><small>Lower thresholds increase eligibility for emergent settlements.</small></div>
+<div class="field"><label for="view">Initial camera</label><select id="view" name="view"><option value="top">Top-down</option><option value="orbit">45° orbit / tilt</option></select><small>Both views support camera controls in the simulator.</small></div>
+<div class="field"><label for="paused">Starting state</label><select id="paused" name="paused"><option value="0">Running</option><option value="1">Paused</option></select><small>Pause to inspect the starting nodes.</small></div>
+</div><div class="actions"><button type="submit">Launch experiment →</button><button class="secondary" type="button" id="share">Create shareable link</button><button class="secondary" type="reset">Reset values</button></div>
+<div role="alert" id="error" aria-live="polite"></div><div id="linkbox" aria-live="polite"><strong>Experiment link:</strong> <a id="experiment-link" href="#"></a></div></form>
+<p class="note">This is an experimental visualization, not a predictive model of real societies. Values configure the published simulator; internal kernel implementations are not included. Random starting conditions mean identical settings do not guarantee identical outcomes.</p>
+</main><script>
+(function(){"use strict";
+const form=document.getElementById("config"),err=document.getElementById("error"),box=document.getElementById("linkbox"),anchor=document.getElementById("experiment-link");
+const range={nodes:[2,20],dist:[80,450],speed:[1,60],threshold:[.2,5]};
+function getUrl(){if(!form.checkValidity()){form.reportValidity();throw Error("Please correct the highlighted values.");}const params=new URLSearchParams();for(const name of ["nodes","dist","speed","threshold"]){const el=form.elements.namedItem(name),v=Number(el.value),bounds=range[name];if(!Number.isFinite(v)||v<bounds[0]||v>bounds[1])throw Error("Invalid value for "+name);params.set(name,String(v));}for(const name of ["step","view","paused"]){params.set(name,form.elements.namedItem(name).value);}return new URL("simulator-custom.html?"+params.toString(),location.href).href;}
+function build(navigate){err.textContent="";try{const url=getUrl();if(navigate){location.assign(url);}else{anchor.href=url;anchor.textContent=url;box.style.display="block";}}catch(e){err.textContent=e.message;}}
+form.addEventListener("submit",e=>{e.preventDefault();build(true);});document.getElementById("share").addEventListener("click",()=>build(false));form.addEventListener("reset",()=>{box.style.display="none";err.textContent="";});
+})();
+</script></body></html>
